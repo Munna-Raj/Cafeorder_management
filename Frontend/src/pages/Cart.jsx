@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { Trash2, Plus, Minus, ChevronLeft, CreditCard } from 'lucide-react';
+import { Trash2, Plus, Minus, ChevronLeft, CreditCard, ShoppingBag, User, Phone, MapPin } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import BackButton from '../components/BackButton';
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQty, itemsPrice, clearCart } = useCart();
@@ -24,7 +25,7 @@ const Cart = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (cartItems.length === 0) {
-      toast.error('Cart is empty');
+      toast.error('Your cart is empty');
       return;
     }
 
@@ -43,11 +44,20 @@ const Cart = () => {
       };
 
       await axios.post('/api/orders', orderData);
-      toast.success('Order placed successfully!');
+      toast.success('Order placed successfully! We are preparing your food.', {
+        duration: 5000,
+        style: {
+          borderRadius: '1.5rem',
+          background: '#5D2E17',
+          color: '#fff',
+          fontWeight: 'bold',
+          padding: '1.5rem'
+        }
+      });
       clearCart();
       navigate('/');
     } catch (error) {
-      toast.error('Failed to place order');
+      toast.error('Failed to place order. Please check your connection.');
       console.error(error);
     } finally {
       setLoading(false);
@@ -56,121 +66,142 @@ const Cart = () => {
 
   if (cartItems.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <h2 className="text-3xl font-bold mb-4 text-primary">Your Cart is Empty</h2>
-        <p className="text-gray-600 mb-8">Add some delicious food to your order!</p>
-        <Link to="/menu" className="bg-primary text-white px-8 py-3 rounded-full hover:bg-opacity-90 transition inline-flex items-center">
-          <ChevronLeft size={20} className="mr-2" /> Back to Menu
-        </Link>
+      <div className="min-h-screen bg-cream flex items-center justify-center px-4 pt-20">
+        <div className="max-w-md w-full text-center glass p-12 rounded-[3rem] shadow-2xl">
+          <div className="bg-primary/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
+            <ShoppingBag size={40} className="text-primary" />
+          </div>
+          <h2 className="text-4xl font-black text-primary mb-4 tracking-tighter">CART IS EMPTY</h2>
+          <p className="text-gray-500 font-bold mb-10 uppercase tracking-widest text-xs">Hungry? Explore our delicious menu now!</p>
+          <Link to="/menu" className="bg-accent text-white px-10 py-4 rounded-2xl font-black shadow-lg shadow-accent/30 hover:bg-accent/90 transition-all flex items-center justify-center group">
+            <ChevronLeft size={20} className="mr-2 group-hover:-translate-x-1 transition-transform" /> START ORDERING
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl font-bold text-primary mb-8">Your Order</h1>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        {/* Cart Items */}
-        <div className="lg:col-span-2 space-y-6">
-          {cartItems.map((item) => (
-            <div key={item._id} className="flex items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-              <img
-                src={item.image.startsWith('/') ? item.image : `/${item.image}`}
-                alt={item.name}
-                className="w-24 h-24 object-cover rounded-lg"
-              />
-              <div className="ml-4 flex-grow">
-                <h3 className="font-bold text-lg">{item.name}</h3>
-                <p className="text-gray-500">Rs. {item.price}</p>
-                <div className="flex items-center mt-2">
-                  <button
-                    onClick={() => updateQty(item._id, Math.max(1, item.qty - 1))}
-                    className="p-1 rounded-md hover:bg-gray-100"
-                  >
-                    <Minus size={16} />
-                  </button>
-                  <span className="mx-3 font-medium">{item.qty}</span>
-                  <button
-                    onClick={() => updateQty(item._id, item.qty + 1)}
-                    className="p-1 rounded-md hover:bg-gray-100"
-                  >
-                    <Plus size={16} />
-                  </button>
+    <div className="min-h-screen bg-cream pt-32 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <BackButton />
+        <h1 className="text-5xl font-black text-primary mb-12 tracking-tight">YOUR ORDER</h1>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Cart Items */}
+          <div className="lg:col-span-2 space-y-6">
+            {cartItems.map((item) => (
+              <div key={item._id} className="flex items-center bg-white p-6 rounded-[2.5rem] shadow-xl border border-gray-100 group transition-all hover:shadow-2xl">
+                <div className="w-32 h-32 flex-shrink-0 overflow-hidden rounded-3xl">
+                  <img
+                    src={item.image.startsWith('/') ? item.image : `/${item.image}`}
+                    alt={item.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                </div>
+                <div className="ml-8 flex-grow">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-black text-2xl text-primary mb-1">{item.name}</h3>
+                      <p className="text-accent font-black">Rs. {item.price}</p>
+                    </div>
+                    <button
+                      onClick={() => removeFromCart(item._id)}
+                      className="text-gray-300 hover:text-red-500 transition-colors p-2"
+                    >
+                      <Trash2 size={24} />
+                    </button>
+                  </div>
+                  <div className="flex items-center mt-6">
+                    <div className="bg-cream rounded-2xl p-1 flex items-center shadow-inner">
+                      <button
+                        onClick={() => updateQty(item._id, Math.max(1, item.qty - 1))}
+                        className="p-2 rounded-xl hover:bg-white text-primary transition-colors"
+                      >
+                        <Minus size={18} />
+                      </button>
+                      <span className="mx-6 font-black text-lg text-primary">{item.qty}</span>
+                      <button
+                        onClick={() => updateQty(item._id, item.qty + 1)}
+                        className="p-2 rounded-xl hover:bg-white text-primary transition-colors"
+                      >
+                        <Plus size={18} />
+                      </button>
+                    </div>
+                    <div className="ml-auto text-right">
+                      <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Subtotal</p>
+                      <p className="font-black text-xl text-primary">Rs. {item.price * item.qty}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="font-bold text-lg">Rs. {item.price * item.qty}</p>
-                <button
-                  onClick={() => removeFromCart(item._id)}
-                  className="text-red-500 hover:text-red-700 mt-2"
+            ))}
+          </div>
+
+          {/* Checkout Form */}
+          <div className="bg-primary text-white p-10 rounded-[3rem] shadow-2xl h-fit sticky top-32">
+            <h2 className="text-3xl font-black mb-8 border-b border-white/10 pb-6 tracking-tighter uppercase">Order Details</h2>
+            
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={20} />
+                <input
+                  type="text"
+                  name="customerName"
+                  placeholder="Your Name"
+                  required
+                  className="w-full pl-12 pr-6 py-4 bg-white/10 border border-white/10 rounded-2xl focus:ring-2 focus:ring-accent outline-none font-bold placeholder:text-white/30"
+                  value={formData.customerName}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="relative">
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={20} />
+                <input
+                  type="tel"
+                  name="customerPhone"
+                  placeholder="Phone Number"
+                  required
+                  className="w-full pl-12 pr-6 py-4 bg-white/10 border border-white/10 rounded-2xl focus:ring-2 focus:ring-accent outline-none font-bold placeholder:text-white/30"
+                  value={formData.customerPhone}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="relative">
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={20} />
+                <select
+                  name="tableNumber"
+                  className="w-full pl-12 pr-6 py-4 bg-white/10 border border-white/10 rounded-2xl focus:ring-2 focus:ring-accent outline-none font-bold appearance-none cursor-pointer"
+                  value={formData.tableNumber}
+                  onChange={handleChange}
                 >
-                  <Trash2 size={20} />
+                  {[1, 2, 3, 4, 5].map(num => (
+                    <option key={num} value={num} className="bg-primary text-white">Table {num}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pt-8 mt-8 border-t border-white/10">
+                <div className="flex justify-between items-end mb-8">
+                  <span className="text-white/60 font-bold uppercase tracking-widest text-sm">Grand Total</span>
+                  <span className="text-4xl font-black text-accent tracking-tighter leading-none">Rs. {itemsPrice}</span>
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-accent hover:bg-accent/90 text-white py-5 rounded-[2rem] font-black text-xl shadow-2xl shadow-accent/40 transition-all hover:-translate-y-1 disabled:opacity-50 flex items-center justify-center"
+                >
+                  {loading ? (
+                    <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <CreditCard size={24} className="mr-3" /> PLACE ORDER
+                    </>
+                  )}
                 </button>
               </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Checkout Form */}
-        <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 h-fit sticky top-24">
-          <h2 className="text-xl font-bold mb-6 border-b pb-4">Order Summary</h2>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
-              <input
-                type="text"
-                name="customerName"
-                required
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                value={formData.customerName}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-              <input
-                type="tel"
-                name="customerPhone"
-                required
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                value={formData.customerPhone}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Table Number (1-5)</label>
-              <select
-                name="tableNumber"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white"
-                value={formData.tableNumber}
-                onChange={handleChange}
-              >
-                {[1, 2, 3, 4, 5].map(num => (
-                  <option key={num} value={num}>Table {num}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="pt-6 border-t mt-6">
-              <div className="flex justify-between text-lg font-bold mb-6">
-                <span>Grand Total</span>
-                <span className="text-primary">Rs. {itemsPrice}</span>
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-primary text-white py-3 rounded-xl font-bold text-lg hover:bg-opacity-90 transition disabled:opacity-50 flex items-center justify-center"
-              >
-                {loading ? 'Processing...' : (
-                  <>
-                    <CreditCard size={20} className="mr-2" /> Place Order
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </div>

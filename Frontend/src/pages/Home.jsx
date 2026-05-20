@@ -24,15 +24,20 @@ const Home = () => {
 
   if (loading) return <Loader />;
 
+  const heroImage = hero?.image || "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&q=80&w=2078";
+
   return (
     <div className="flex flex-col">
       {/* Hero Section with Parallax and Gradient Overlay */}
       <section className="relative min-h-screen flex items-center justify-center text-white overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-cream/100 z-10"></div>
         <img
-          src={hero?.image || "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&q=80&w=2078"}
+          src={heroImage}
           alt="Hero"
           className="absolute inset-0 w-full h-full object-cover scale-105 animate-slow-zoom"
+          onError={(e) => {
+            e.target.src = "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&q=80&w=2078";
+          }}
         />
         
         <div className="relative z-20 text-center px-4 max-w-5xl">

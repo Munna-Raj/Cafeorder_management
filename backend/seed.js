@@ -35,22 +35,29 @@ const seedData = async () => {
         price: 50,
         description: 'Authentic Nepali tea served in a clay pot (Matka).',
         category: 'Beverage',
-        image: '/uploads/matka-tea.jpg',
+        image: 'https://images.unsplash.com/photo-1594631252845-29fc4586c55c?auto=format&fit=crop&q=80&w=500',
       },
       {
         name: 'Buff MoMo',
         price: 150,
         description: 'Steamed dumplings filled with spiced buffalo meat.',
         category: 'Snacks',
-        image: '/uploads/buff-momo.jpg',
+        image: 'https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?auto=format&fit=crop&q=80&w=500',
       },
       {
         name: 'Chicken Choila',
         price: 200,
         description: 'Spicy grilled chicken salad with Nepali spices.',
         category: 'Snacks',
-        image: '/uploads/chicken-choila.jpg',
+        image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&q=80&w=500',
       },
+      {
+        name: 'Masala Tea',
+        price: 60,
+        description: 'Traditional Nepali tea with aromatic spices.',
+        category: 'Beverage',
+        image: 'https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8?auto=format&fit=crop&q=80&w=500',
+      }
     ];
 
     await FoodItem.insertMany(sampleFood);
@@ -63,7 +70,7 @@ const seedData = async () => {
         title: 'Welcome to Matka Cafe',
         subtitle: 'Authentic Nepali Taste in Every Sip',
         description: 'Experience the traditional Matka tea and delicious Nepali cuisine.',
-        image: '/uploads/hero-banner.jpg',
+        image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&q=80&w=2078',
       },
       {
         section: 'about',
