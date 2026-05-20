@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Matka Cafe - Cafe Booking & Food Ordering System
 
 A complete MERN stack application for managing a cafe. Customers can explore the menu, book tables, and order food. Admins can manage food items, orders, bookings, and site content.
@@ -72,3 +73,7 @@ npm run dev
 
 ## Currency
 All prices are in **Nepali Rupees (Rs/NPR)**.
+=======
+# Cafeorder_management
+A complete cafe order management system designed to simplify daily cafe operations. This project helps manage customer orders, menu items, billing, inventory, and staff activities efficiently through a user-friendly interface.
+>>>>>>> 14b1fb71418c21bf55f31ad04f5faac08e94d6b2
