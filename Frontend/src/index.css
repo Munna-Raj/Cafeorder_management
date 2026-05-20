@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  /* Rich Earthy Palette for Matka Cafe */
+  --color-primary: #5D2E17; /* Deep Espresso */
+  --color-primary-light: #8B4513; /* Saddle Brown */
+  --color-secondary: #D2B48C; /* Tan */
+  --color-accent: #E67E22; /* Carrot Orange */
+  --color-cream: #FDF5E6; /* Old Lace */
+  
+  /* Gradients */
+  --background-image-gradient-primary: linear-gradient(135deg, #5D2E17 0%, #8B4513 100%);
+  --background-image-gradient-accent: linear-gradient(135deg, #E67E22 0%, #D35400 100%);
+  --background-image-gradient-glass: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+}
+
+:root {
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  background-color: #FDF5E6;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: #2D1A12;
+}
+
+/* Custom Glassmorphism Utility */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.glass-dark {
+  background: rgba(45, 26, 18, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
