@@ -1,12 +1,23 @@
 const asyncHandler = require('express-async-handler');
 const FoodItem = require('../models/FoodItem');
+const { isDbConnected } = require('../config/dbState');
+const { getFallbackFood } = require('../utils/fallbackData');
 
 // @desc    Get all food items
 // @route   GET /api/food
 // @access  Public
 const getFoodItems = asyncHandler(async (req, res) => {
-  const foodItems = await FoodItem.find({});
-  res.json(foodItems);
+  if (!isDbConnected()) {
+    return res.json(getFallbackFood());
+  }
+
+  try {
+    const foodItems = await FoodItem.find({});
+    res.json(foodItems.length > 0 ? foodItems : getFallbackFood());
+  } catch (error) {
+    console.warn('[API] Food query failed, using fallback:', error.message);
+    res.json(getFallbackFood());
+  }
 });
 
 // @desc    Get single food item
@@ -31,7 +42,7 @@ const createFoodItem = asyncHandler(async (req, res) => {
 
   const foodItem = new FoodItem({
     name,
-    price,
+    price: Number(price),
     description,
     category,
     image,

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { Trash2, Plus, Minus, ChevronLeft, CreditCard, ShoppingBag, User, Phone, MapPin } from 'lucide-react';
+import { Trash2, Plus, Minus, ChevronLeft, CreditCard, ShoppingBag, User, Lock, MapPin } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
@@ -12,7 +12,7 @@ const Cart = () => {
 
   const [formData, setFormData] = useState({
     customerName: '',
-    customerPhone: '',
+    orderPin: '',
     tableNumber: 1,
   });
 
@@ -28,11 +28,17 @@ const Cart = () => {
       toast.error('Your cart is empty');
       return;
     }
+    if (formData.orderPin.length !== 4) {
+      toast.error('Pin must be 4 digits');
+      return;
+    }
 
     setLoading(true);
     try {
       const orderData = {
-        ...formData,
+        customerName: formData.customerName,
+        orderPin: formData.orderPin,
+        tableNumber: formData.tableNumber,
         orderItems: cartItems.map(item => ({
           name: item.name,
           qty: item.qty,
@@ -156,15 +162,16 @@ const Cart = () => {
                 />
               </div>
               <div className="relative">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={20} />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={20} />
                 <input
                   type="tel"
-                  name="customerPhone"
-                  placeholder="Phone Number"
+                  name="orderPin"
+                  maxLength="4"
+                  placeholder="4-Digit Order Pin"
                   required
                   className="w-full pl-12 pr-6 py-4 bg-white/10 border border-white/10 rounded-2xl focus:ring-2 focus:ring-accent outline-none font-bold placeholder:text-white/30"
-                  value={formData.customerPhone}
-                  onChange={handleChange}
+                  value={formData.orderPin}
+                  onChange={(e) => setFormData({...formData, orderPin: e.target.value.replace(/\D/g, '')})}
                 />
               </div>
               <div className="relative">

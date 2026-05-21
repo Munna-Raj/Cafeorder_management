@@ -1,45 +1,64 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { 
   ShoppingBag, 
-  Utensils, 
-  Calendar, 
   DollarSign, 
   Clock, 
-  CheckCircle,
   LayoutDashboard,
-  Settings
+  CheckCircle2,
+  XCircle,
+  Lock
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Loader from '../../components/Loader';
+import { toast } from 'react-hot-toast';
 
 const AdminDashboard = () => {
   const { admin } = useAuth();
   const [stats, setStats] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
+  const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    fetchDashboardData();
+  }, [admin]);
+
+  const fetchDashboardData = async () => {
+    try {
+      const config = {
+        headers: { Authorization: `Bearer ${admin.token}` },
+      };
+      const [statsRes, ordersRes, tablesRes] = await Promise.all([
+        api.get('/api/orders/stats', config),
+        api.get('/api/orders', config),
+        api.get('/api/tables')
+      ]);
+      setStats(statsRes.data);
+      setRecentOrders(ordersRes.data.slice(0, 5));
+      setTables(tablesRes.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching dashboard data', error);
+      setLoading(false);
+    }
+  };
+
+  const handleReleaseTable = async (id) => {
+    if (window.confirm('Are you sure you want to clear this table?')) {
       try {
         const config = {
           headers: { Authorization: `Bearer ${admin.token}` },
         };
-        const [statsRes, ordersRes] = await Promise.all([
-          axios.get('/api/orders/stats', config),
-          axios.get('/api/orders', config),
-        ]);
-        setStats(statsRes.data);
-        setRecentOrders(ordersRes.data.slice(0, 5));
-        setLoading(false);
+        await api.post(`/api/tables/release/${id}`, {}, config);
+        toast.success('Table cleared and released');
+        fetchDashboardData(); // Refresh data
       } catch (error) {
-        console.error('Error fetching dashboard data', error);
-        setLoading(false);
+        toast.error('Failed to release table');
       }
-    };
-    fetchDashboardData();
-  }, [admin]);
+    }
+  };
 
   if (loading) return <Loader />;
 
@@ -58,20 +77,27 @@ const AdminDashboard = () => {
         </h2>
         <nav className="space-y-4">
           <Link to="/admin" className="block p-3 rounded-lg bg-secondary text-primary font-bold">Dashboard</Link>
-          <Link to="/admin/food" className="block p-3 rounded-lg hover:bg-secondary/20 transition">Manage Food</Link>
+          <Link to="/admin/food" className="block p-3 rounded-lg hover:bg-secondary/20 transition">Food & Beverages</Link>
           <Link to="/admin/orders" className="block p-3 rounded-lg hover:bg-secondary/20 transition">Manage Orders</Link>
-          <Link to="/admin/bookings" className="block p-3 rounded-lg hover:bg-secondary/20 transition">Manage Bookings</Link>
           <Link to="/admin/content" className="block p-3 rounded-lg hover:bg-secondary/20 transition">Site Content</Link>
         </nav>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 p-8">
-        <header className="flex justify-between items-center mb-8">
+        <header className="flex flex-wrap justify-between items-center gap-4 mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Dashboard Overview</h1>
+          <div className="flex items-center gap-3">
+          <Link
+            to="/admin/food"
+            className="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-accent/90 transition shadow-lg shadow-accent/20"
+          >
+            + Add Food / Beverage
+          </Link>
           <div className="bg-white px-4 py-2 rounded-lg shadow-sm border flex items-center">
             <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
             <span className="text-sm font-medium text-gray-600">Admin Active</span>
+          </div>
           </div>
         </header>
 
@@ -88,6 +114,54 @@ const AdminDashboard = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Table Status Section */}
+        <div className="mb-12">
+          <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
+            <div className="w-2 h-8 bg-accent rounded-full mr-3"></div>
+            Real-time Table Status
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {tables.map((table) => (
+              <div key={table._id} className={`p-6 rounded-[2rem] border transition-all ${
+                table.isOccupied 
+                ? 'bg-white border-red-100 shadow-lg shadow-red-50' 
+                : 'bg-white border-gray-100 shadow-sm'
+              }`}>
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-2xl font-black text-primary">#{table.tableNumber}</span>
+                  {table.isOccupied ? (
+                    <XCircle className="text-red-500" size={20} />
+                  ) : (
+                    <CheckCircle2 className="text-green-500" size={20} />
+                  )}
+                </div>
+                
+                {table.isOccupied ? (
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Customer</p>
+                    <p className="text-sm font-black text-primary truncate mb-1">{table.occupiedBy}</p>
+                    <div className="flex items-center text-accent mb-4">
+                      <Lock size={12} className="mr-1" />
+                      <span className="text-xs font-black">PIN: {table.orderPin}</span>
+                    </div>
+                    <button 
+                      onClick={() => handleReleaseTable(table._id)}
+                      className="w-full py-2 bg-red-50 text-red-600 rounded-xl text-xs font-black hover:bg-red-600 hover:text-white transition-all"
+                    >
+                      CLEAR TABLE
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status</p>
+                    <p className="text-sm font-black text-green-600">Available</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Recent Orders Table */}

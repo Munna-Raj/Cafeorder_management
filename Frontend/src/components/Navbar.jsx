@@ -1,8 +1,9 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingCart, User, LogOut, Menu as MenuIcon, X, Coffee } from 'lucide-react';
+import { ShoppingCart, User, LogOut, Menu as MenuIcon, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useState, useEffect } from 'react';
+import logo from '../IMAGE/Matkalogo.jpeg';
 
 const Navbar = () => {
   const { cartItems } = useCart();
@@ -26,9 +27,7 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Menu', path: '/menu' },
-    { name: 'Booking', path: '/booking' },
+    { name: 'Menu', path: '/' },
   ];
 
   return (
@@ -38,11 +37,11 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center group">
-            <div className="bg-accent p-2 rounded-xl mr-3 group-hover:rotate-12 transition-transform duration-300 shadow-lg">
-              <Coffee className="text-white" size={24} />
+            <div className="mr-3 group-hover:rotate-6 transition-transform duration-300">
+              <img src={logo} alt="Matka House Logo" className="h-12 w-12 rounded-full border-2 border-accent object-cover shadow-lg" />
             </div>
             <span className="text-white font-black text-2xl tracking-tighter">
-              MATKA<span className="text-accent">CAFE</span>
+              MATKA<span className="text-accent">HOUSE</span>
             </span>
           </Link>
           
@@ -78,6 +77,9 @@ const Navbar = () => {
 
               {admin ? (
                 <div className="flex items-center space-x-4">
+                  <Link to="/admin/food" className="text-sm font-bold uppercase tracking-widest text-white/90 hover:text-accent transition-colors">
+                    Menu Items
+                  </Link>
                   <Link to="/admin" className="flex items-center bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl transition-colors text-white text-sm font-bold">
                     <User size={18} className="mr-2" /> Admin
                   </Link>
@@ -133,6 +135,7 @@ const Navbar = () => {
           <div className="pt-4 space-y-2">
             {admin ? (
               <>
+                <Link to="/admin/food" className="block w-full bg-accent text-white px-4 py-4 rounded-2xl font-bold text-center" onClick={() => setIsOpen(false)}>Add Food / Beverage</Link>
                 <Link to="/admin" className="block w-full bg-white/10 text-white px-4 py-4 rounded-2xl font-bold text-center" onClick={() => setIsOpen(false)}>Admin Panel</Link>
                 <button onClick={handleLogout} className="block w-full text-red-400 bg-red-400/10 px-4 py-4 rounded-2xl font-bold">Logout</button>
               </>

@@ -61,12 +61,6 @@ const Home = () => {
             >
               EXPLORE MENU <ArrowRight className="ml-2" size={20} />
             </Link>
-            <Link
-              to="/booking"
-              className="bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-white hover:text-primary transition-all hover:-translate-y-1 flex items-center justify-center"
-            >
-              BOOK A TABLE
-            </Link>
           </div>
         </div>
 

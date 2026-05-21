@@ -8,10 +8,10 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-16">
           <div className="col-span-1 md:col-span-2">
             <h3 className="text-3xl font-black mb-6 tracking-tighter">
-              MATKA<span className="text-accent">CAFE</span>
+              MATKA<span className="text-accent">HOUSE</span>
             </h3>
             <p className="text-gray-400 text-lg leading-relaxed max-w-md font-medium">
-              We bring you the soul of Nepal in every clay pot. Our mission is to preserve tradition while serving modern delights in a cozy atmosphere.
+              Inaruwa's premier 100% pure vegetarian cafe. We bring you the soul of Nepal in every clay pot.
             </p>
             <div className="flex space-x-4 mt-8">
               {['FB', 'IG', 'TW', 'YT'].map((social) => (
@@ -25,8 +25,7 @@ const Footer = () => {
           <div>
             <h4 className="text-accent font-black uppercase tracking-widest text-sm mb-8">Quick Navigation</h4>
             <ul className="space-y-4 font-bold">
-              <li><a href="/menu" className="text-gray-400 hover:text-white transition-colors">Explore Menu</a></li>
-              <li><a href="/booking" className="text-gray-400 hover:text-white transition-colors">Book a Table</a></li>
+              <li><a href="/" className="text-gray-400 hover:text-white transition-colors">Explore Menu</a></li>
               <li><a href="/about" className="text-gray-400 hover:text-white transition-colors">Our Story</a></li>
               <li><a href="/contact" className="text-gray-400 hover:text-white transition-colors">Get in Touch</a></li>
             </ul>
@@ -35,9 +34,9 @@ const Footer = () => {
           <div>
             <h4 className="text-accent font-black uppercase tracking-widest text-sm mb-8">Visit Us</h4>
             <div className="space-y-4 text-gray-400 font-medium">
-              <p>Basantapur, Kathmandu<br />Nepal, 44600</p>
-              <p className="text-white font-black">+977 980 123 4567</p>
-              <p>hello@matkacafe.com</p>
+              <p>Inaruwa-3, Sunsari<br />Nepal</p>
+              <p className="text-white font-black">9814372647</p>
+              <p>MatkaHouse@gmail.com</p>
             </div>
           </div>
         </div>

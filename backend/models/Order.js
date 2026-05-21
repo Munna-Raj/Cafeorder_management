@@ -6,9 +6,9 @@ const orderSchema = mongoose.Schema(
       type: String,
       required: [true, 'Please add a customer name'],
     },
-    customerPhone: {
+    orderPin: {
       type: String,
-      required: [true, 'Please add a phone number'],
+      required: [true, 'Please add a 4-digit pin'],
     },
     tableNumber: {
       type: Number,
@@ -20,6 +20,8 @@ const orderSchema = mongoose.Schema(
         qty: { type: Number, required: true },
         image: { type: String, required: true },
         price: { type: Number, required: true },
+        orderedAt: { type: Date, default: Date.now },
+        isNewItem: { type: Boolean, default: true },
         foodItem: {
           type: mongoose.Schema.Types.ObjectId,
           required: true,

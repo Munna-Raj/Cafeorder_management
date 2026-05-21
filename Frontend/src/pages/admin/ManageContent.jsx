@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
-import { Save, Layout, Info, PhoneCall, Upload } from 'lucide-react';
+import { Save, Layout, Info, PhoneCall, Upload, LayoutDashboard } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import Loader from '../../components/Loader';
 
@@ -74,7 +75,22 @@ const ManageContent = () => {
   if (loading) return <Loader />;
 
   return (
-    <div className="flex-1 p-8 bg-gray-50 min-h-screen">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <div className="w-full md:w-64 bg-primary text-white p-6">
+        <h2 className="text-2xl font-bold mb-8 flex items-center">
+          <LayoutDashboard className="mr-2" /> Admin Panel
+        </h2>
+        <nav className="space-y-4">
+          <Link to="/admin" className="block p-3 rounded-lg hover:bg-secondary/20 transition">Dashboard</Link>
+          <Link to="/admin/food" className="block p-3 rounded-lg hover:bg-secondary/20 transition">Food & Beverages</Link>
+          <Link to="/admin/orders" className="block p-3 rounded-lg hover:bg-secondary/20 transition">Manage Orders</Link>
+          <Link to="/admin/content" className="block p-3 rounded-lg bg-secondary text-primary font-bold">Site Content</Link>
+        </nav>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 p-8">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Site Content Management</h1>
 
       <div className="space-y-12 max-w-4xl">
@@ -171,6 +187,7 @@ const ManageContent = () => {
             </button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

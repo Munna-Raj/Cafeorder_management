@@ -1,39 +1,116 @@
 const asyncHandler = require('express-async-handler');
 const Order = require('../models/Order');
+const { isDbConnected } = require('../config/dbState');
+const {
+  addMemoryOrder,
+  getMemoryOrders,
+  findMemoryOrderById,
+  updateMemoryOrderItemQty,
+  cancelMemoryOrder,
+  updateMemoryOrderStatus,
+  deleteMemoryOrder,
+  getMemoryStats,
+} = require('../utils/memoryStore');
 
-// @desc    Create new order
-// @route   POST /api/orders
-// @access  Public
 const addOrderItems = asyncHandler(async (req, res) => {
-  const {
-    customerName,
-    customerPhone,
-    tableNumber,
-    orderItems,
-    totalPrice,
-  } = req.body;
+  const { customerName, orderPin, tableNumber, orderItems, totalPrice } = req.body;
 
   if (orderItems && orderItems.length === 0) {
     res.status(400);
     throw new Error('No order items');
-  } else {
-    const order = new Order({
+  }
+
+  if (!isDbConnected()) {
+    const result = addMemoryOrder({
       customerName,
-      customerPhone,
+      orderPin,
       tableNumber,
       orderItems,
       totalPrice,
     });
+    return res.status(result.status).json(result.order);
+  }
 
-    const createdOrder = await order.save();
+  let order = await Order.findOne({
+    tableNumber,
+    orderPin,
+    status: { $in: ['Pending', 'Preparing'] },
+  });
+
+  if (order) {
+    const newItems = orderItems.map((item) => ({
+      ...item,
+      orderedAt: new Date(),
+      isNewItem: true,
+    }));
+
+    order.orderItems.push(...newItems);
+    order.totalPrice += totalPrice;
+    const updatedOrder = await order.save();
+    res.status(201).json(updatedOrder);
+  } else {
+    const newOrder = new Order({
+      customerName,
+      orderPin,
+      tableNumber,
+      orderItems: orderItems.map((item) => ({ ...item, isNewItem: false })),
+      totalPrice,
+    });
+
+    const createdOrder = await newOrder.save();
     res.status(201).json(createdOrder);
   }
 });
 
-// @desc    Get order by ID
-// @route   GET /api/orders/:id
-// @access  Public
+const markOrderItemsSeen = asyncHandler(async (req, res) => {
+  if (!isDbConnected()) {
+    const order = findMemoryOrderById(req.params.id);
+    if (!order) {
+      res.status(404);
+      throw new Error('Order not found');
+    }
+    order.orderItems.forEach((item) => {
+      item.isNewItem = false;
+    });
+    return res.json({ message: 'Items marked as seen' });
+  }
+
+  const order = await Order.findById(req.params.id);
+  if (order) {
+    order.orderItems.forEach((item) => {
+      item.isNewItem = false;
+    });
+    order.markModified('orderItems');
+    await order.save();
+    res.json({ message: 'Items marked as seen' });
+  } else {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+});
+
+const getMyOrders = asyncHandler(async (req, res) => {
+  const { table, pin } = req.query;
+
+  if (!isDbConnected()) {
+    const orders = getMemoryOrders({ tableNumber: table, orderPin: pin });
+    return res.json(orders);
+  }
+
+  const orders = await Order.find({ tableNumber: table, orderPin: pin }).sort({
+    createdAt: -1,
+  });
+  res.json(orders);
+});
+
 const getOrderById = asyncHandler(async (req, res) => {
+  if (!isDbConnected()) {
+    const order = findMemoryOrderById(req.params.id);
+    if (order) return res.json(order);
+    res.status(404);
+    throw new Error('Order not found');
+  }
+
   const order = await Order.findById(req.params.id);
 
   if (order) {
@@ -44,14 +121,24 @@ const getOrderById = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Update order status
-// @route   PUT /api/orders/:id/status
-// @access  Private/Admin
 const updateOrderStatus = asyncHandler(async (req, res) => {
+  const { status } = req.body;
+
+  if (!isDbConnected()) {
+    const result = updateMemoryOrderStatus(req.params.id, status);
+    if (result.status !== 200) {
+      res.status(result.status);
+      throw new Error(result.message);
+    }
+    return res.json(result.order);
+  }
+
   const order = await Order.findById(req.params.id);
 
   if (order) {
-    order.status = req.body.status || order.status;
+    if (status) {
+      order.status = status;
+    }
     const updatedOrder = await order.save();
     res.json(updatedOrder);
   } else {
@@ -60,27 +147,114 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Get all orders
-// @route   GET /api/orders
-// @access  Private/Admin
 const getOrders = asyncHandler(async (req, res) => {
+  if (!isDbConnected()) {
+    return res.json(getMemoryOrders());
+  }
+
   const orders = await Order.find({}).sort({ createdAt: -1 });
   res.json(orders);
 });
 
-// @desc    Get dashboard stats
-// @route   GET /api/orders/stats
-// @access  Private/Admin
 const getStats = asyncHandler(async (req, res) => {
+  if (!isDbConnected()) {
+    return res.json(getMemoryStats());
+  }
+
   const totalOrders = await Order.countDocuments();
   const orders = await Order.find({});
   const totalRevenue = orders.reduce((acc, item) => acc + item.totalPrice, 0);
-  
-  // You can add more stats like total food items, etc. here or fetch them separately
+
   res.json({
     totalOrders,
     totalRevenue,
   });
+});
+
+const updateOrderItemQty = asyncHandler(async (req, res) => {
+  const { itemId, qty } = req.body;
+
+  if (!isDbConnected()) {
+    const result = updateMemoryOrderItemQty(req.params.id, itemId, qty);
+    if (result.status !== 200) {
+      res.status(result.status);
+      throw new Error(result.message);
+    }
+    return res.json(result.order);
+  }
+
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+
+  if (order.status !== 'Pending') {
+    res.status(400);
+    throw new Error('Order is already being prepared and cannot be modified');
+  }
+
+  const item = order.orderItems.id(itemId);
+  if (!item) {
+    res.status(404);
+    throw new Error('Item not found in order');
+  }
+
+  item.qty = qty;
+  order.totalPrice = order.orderItems.reduce(
+    (acc, item) => acc + item.price * item.qty,
+    0
+  );
+
+  const updatedOrder = await order.save();
+  res.json(updatedOrder);
+});
+
+const cancelOrder = asyncHandler(async (req, res) => {
+  if (!isDbConnected()) {
+    const result = cancelMemoryOrder(req.params.id);
+    if (result.status !== 200) {
+      res.status(result.status);
+      throw new Error(result.message);
+    }
+    return res.json(result.order);
+  }
+
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+
+  if (order.status !== 'Pending') {
+    res.status(400);
+    throw new Error('Order is already being prepared and cannot be cancelled');
+  }
+
+  order.status = 'Cancelled';
+  const updatedOrder = await order.save();
+  res.json(updatedOrder);
+});
+
+const deleteOrder = asyncHandler(async (req, res) => {
+  if (!isDbConnected()) {
+    const result = deleteMemoryOrder(req.params.id);
+    if (result.status !== 200) {
+      return res.status(result.status).json({ success: false, message: result.message });
+    }
+    return res.json({ success: true, message: result.message });
+  }
+
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    return res.status(404).json({ success: false, message: 'Order not found' });
+  }
+
+  await order.deleteOne();
+  res.json({ success: true, message: 'Order removed' });
 });
 
 module.exports = {
@@ -89,4 +263,9 @@ module.exports = {
   updateOrderStatus,
   getOrders,
   getStats,
+  markOrderItemsSeen,
+  getMyOrders,
+  updateOrderItemQty,
+  cancelOrder,
+  deleteOrder,
 };
