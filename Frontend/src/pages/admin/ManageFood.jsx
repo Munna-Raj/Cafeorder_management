@@ -5,6 +5,7 @@ import { Plus, Edit, Trash2, X, Upload, LayoutDashboard, Tag, Check, Pencil } fr
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import Loader from '../../components/Loader';
+import { resolveImageUrl, handleImageError } from '../../utils/imageUtils';
 
 const DEFAULT_CATEGORY = 'Beverage';
 
@@ -373,7 +374,7 @@ const ManageFood = () => {
               {foodItems.map((item) => (
                 <tr key={item._id} className="hover:bg-gray-50/80">
                   <td className="px-6 py-4">
-                    <img src={item.image} alt={item.name} className="w-12 h-12 rounded-xl object-cover" />
+                    <img src={resolveImageUrl(item.image)} alt={item.name} className="w-12 h-12 rounded-xl object-cover" onError={handleImageError} />
                   </td>
                   <td className="px-6 py-4 font-bold text-primary">{item.name}</td>
                   <td className="px-6 py-4">

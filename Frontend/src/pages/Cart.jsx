@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import BackButton from '../components/BackButton';
+import { resolveImageUrl, handleImageError } from '../utils/imageUtils';
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQty, itemsPrice, clearCart } = useCart();
@@ -100,9 +101,10 @@ const Cart = () => {
               <div key={item._id} className="flex items-center bg-white p-6 rounded-[2.5rem] shadow-xl border border-gray-100 group transition-all hover:shadow-2xl">
                 <div className="w-32 h-32 flex-shrink-0 overflow-hidden rounded-3xl">
                   <img
-                    src={item.image.startsWith('/') ? item.image : `/${item.image}`}
+                    src={resolveImageUrl(item.image)}
                     alt={item.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    onError={handleImageError}
                   />
                 </div>
                 <div className="ml-8 flex-grow">

@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import api from '../../api';
+import { useAuth } from '../../context/AuthContext';
 import {
   ShoppingBag,
   User,
@@ -27,48 +28,72 @@ const STATUS_STYLES = {
 const FILTERS = ['All', 'Pending', 'Preparing', 'Delivered', 'Cancelled'];
 
 const ManageOrders = () => {
+  const { admin } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [statusFilter, setStatusFilter] = useState('All');
 
-  useEffect(() => {
-    fetchOrders();
-    const interval = setInterval(fetchOrders, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  const authConfig = useCallback(
+    () => ({
+      headers: { Authorization: `Bearer ${admin?.token}` },
+    }),
+    [admin?.token]
+  );
 
-  const fetchOrders = async (silent = false) => {
-    if (!silent) setRefreshing(true);
-    try {
-      const { data } = await api.get('/api/orders');
-      setOrders(data);
-      setLoading(false);
-    } catch (error) {
-      if (loading) toast.error('Failed to fetch orders');
-      setLoading(false);
-    } finally {
-      setRefreshing(false);
-    }
-  };
+  const fetchOrders = useCallback(
+    async (silent = false) => {
+      if (!admin?.token) {
+        setLoading(false);
+        return;
+      }
+
+      if (!silent) setRefreshing(true);
+      try {
+        const { data } = await api.get('/api/orders', authConfig());
+        setOrders(Array.isArray(data) ? data : []);
+      } catch (error) {
+        if (!silent) {
+          const msg =
+            error.response?.status === 401
+              ? 'Session expired. Please log in again.'
+              : error.response?.data?.message ||
+                error.message ||
+                'Failed to fetch orders';
+          toast.error(msg);
+        }
+      } finally {
+        setLoading(false);
+        if (!silent) setRefreshing(false);
+      }
+    },
+    [admin?.token, authConfig]
+  );
+
+  useEffect(() => {
+    if (!admin?.token) return;
+    fetchOrders();
+    const interval = setInterval(() => fetchOrders(true), 5000);
+    return () => clearInterval(interval);
+  }, [admin?.token, fetchOrders]);
 
   const updateStatus = async (id, status) => {
     try {
-      await api.put(`/api/orders/${id}/status`, { status });
+      await api.put(`/api/orders/${id}/status`, { status }, authConfig());
       toast.success('Order status updated');
       fetchOrders(true);
     } catch (error) {
-      toast.error('Update failed');
+      toast.error(error.response?.data?.message || 'Update failed');
     }
   };
 
   const markAsSeen = async (id) => {
     try {
-      await api.put(`/api/orders/${id}/seen`);
+      await api.put(`/api/orders/${id}/seen`, {}, authConfig());
       toast.success('Marked as seen');
       fetchOrders(true);
     } catch (error) {
-      toast.error('Failed to mark as seen');
+      toast.error(error.response?.data?.message || 'Failed to mark as seen');
     }
   };
 
@@ -76,7 +101,7 @@ const ManageOrders = () => {
     if (!window.confirm('Delete this order permanently? This cannot be undone.')) return;
 
     try {
-      await api.delete(`/api/orders/${id}`);
+      await api.delete(`/api/orders/${id}`, authConfig());
       toast.success('Order deleted');
       setOrders((prev) => prev.filter((o) => o._id !== id));
     } catch (error) {
@@ -93,7 +118,9 @@ const ManageOrders = () => {
       pending: orders.filter((o) => o.status === 'Pending').length,
       preparing: orders.filter((o) => o.status === 'Preparing').length,
       sales: active.reduce((acc, o) => acc + o.totalPrice, 0),
-      newCount: orders.filter((o) => o.orderItems.some((i) => i.isNewItem)).length,
+      newCount: orders.filter((o) =>
+        Array.isArray(o.orderItems) && o.orderItems.some((i) => i.isNewItem)
+      ).length,
     };
   }, [orders]);
 
@@ -215,7 +242,9 @@ const ManageOrders = () => {
         <div className="space-y-5">
           {filteredOrders.length > 0 ? (
             filteredOrders.map((order) => {
-              const hasNewItems = order.orderItems.some((item) => item.isNewItem);
+              const hasNewItems =
+                Array.isArray(order.orderItems) &&
+                order.orderItems.some((item) => item.isNewItem);
               const statusClass = STATUS_STYLES[order.status] || STATUS_STYLES.Pending;
 
               return (
@@ -341,7 +370,7 @@ const ManageOrders = () => {
                         </span>
                       </div>
                       <ul className="flex-1 space-y-2 rounded-2xl bg-gray-50/80 p-4 border border-gray-100">
-                        {[...order.orderItems].reverse().map((item, idx) => (
+                        {[...(order.orderItems || [])].reverse().map((item, idx) => (
                           <li
                             key={idx}
                             className={`flex justify-between items-center gap-4 py-2.5 px-3 rounded-xl ${

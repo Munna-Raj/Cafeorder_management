@@ -1,6 +1,7 @@
 import { useCart } from '../context/CartContext';
 import { toast } from 'react-hot-toast';
 import { Plus } from 'lucide-react';
+import { resolveImageUrl, handleImageError } from '../utils/imageUtils';
 
 const FoodCard = ({ food }) => {
   const { addToCart } = useCart();
@@ -18,23 +19,15 @@ const FoodCard = ({ food }) => {
     });
   };
 
-  const getImageUrl = (img) => {
-    if (!img) return "https://images.unsplash.com/photo-1544333346-64e4fe18274b?auto=format&fit=crop&q=80&w=200";
-    if (img.startsWith('http')) return img;
-    return img.startsWith('/') ? img : `/${img}`;
-  };
-
   return (
     <div className="bg-white rounded-2xl p-3 flex items-center justify-between shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
       <div className="flex items-center space-x-4 flex-1 min-w-0">
         <div className="w-16 h-16 rounded-xl overflow-hidden bg-cream flex-shrink-0">
           <img
-            src={getImageUrl(food.image)}
+            src={resolveImageUrl(food.image)}
             alt={food.name}
             className="w-full h-full object-cover"
-            onError={(e) => {
-              e.target.src = "https://images.unsplash.com/photo-1544333346-64e4fe18274b?auto=format&fit=crop&q=80&w=200";
-            }}
+            onError={handleImageError}
           />
         </div>
         <div className="min-w-0">

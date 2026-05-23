@@ -7,6 +7,7 @@ import { Search, UtensilsCrossed, ShoppingBag, Trash2, CreditCard, User, Lock, M
 import { useCart } from '../context/CartContext';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { resolveImageUrl, handleImageError } from '../utils/imageUtils';
 
 const Menu = () => {
   const [foodItems, setFoodItems] = useState([]);
@@ -498,7 +499,7 @@ const Menu = () => {
                           <div key={idx} className="flex justify-between items-center">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-xl bg-cream overflow-hidden flex-shrink-0">
-                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                <img src={resolveImageUrl(item.image)} alt={item.name} className="w-full h-full object-cover" onError={handleImageError} />
                               </div>
                               <div>
                                 <h4 className="text-sm font-black text-primary uppercase leading-none">{item.name}</h4>
@@ -604,7 +605,7 @@ const Menu = () => {
                   {cartItems.map((item) => (
                     <div key={item._id} className="flex items-center group">
                       <div className="w-12 h-12 rounded-xl overflow-hidden bg-cream flex-shrink-0">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        <img src={resolveImageUrl(item.image)} alt={item.name} className="w-full h-full object-cover" onError={handleImageError} />
                       </div>
                       <div className="ml-4 flex-grow min-w-0">
                         <h4 className="text-xs font-black text-primary truncate uppercase tracking-tight">{item.name}</h4>

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Loader from '../components/Loader';
 import { ArrowRight, Coffee, Utensils, Star, Clock, MapPin } from 'lucide-react';
+import { resolveImageUrl, handleImageError, HERO_PLACEHOLDER } from '../utils/imageUtils';
 
 const Home = () => {
   const [hero, setHero] = useState(null);
@@ -24,7 +25,7 @@ const Home = () => {
 
   if (loading) return <Loader />;
 
-  const heroImage = hero?.image || "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&q=80&w=2078";
+  const heroImage = resolveImageUrl(hero?.image, HERO_PLACEHOLDER);
 
   return (
     <div className="flex flex-col">
@@ -35,9 +36,7 @@ const Home = () => {
           src={heroImage}
           alt="Hero"
           className="absolute inset-0 w-full h-full object-cover scale-105 animate-slow-zoom"
-          onError={(e) => {
-            e.target.src = "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&q=80&w=2078";
-          }}
+          onError={(e) => handleImageError(e, HERO_PLACEHOLDER)}
         />
         
         <div className="relative z-20 text-center px-4 max-w-5xl">

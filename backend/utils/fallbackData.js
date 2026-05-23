@@ -5,7 +5,7 @@ const fallbackFood = [
     price: 50,
     description: 'Authentic Nepali spiced tea served in a traditional clay pot.',
     category: 'Beverage',
-    image: 'https://images.unsplash.com/photo-1594631252845-29fc4586c55c?auto=format&fit=crop&q=80&w=500',
+    image: '',
     isAvailable: true,
   },
   {
@@ -14,7 +14,7 @@ const fallbackFood = [
     price: 180,
     description: 'Steamed dumplings filled with spiced cottage cheese and minced vegetables.',
     category: 'Snacks',
-    image: 'https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?auto=format&fit=crop&q=80&w=500',
+    image: '',
     isAvailable: true,
   },
   {
@@ -23,7 +23,7 @@ const fallbackFood = [
     price: 120,
     description: 'Stir-fried noodles with fresh garden vegetables and Nepali spices.',
     category: 'Snacks',
-    image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&q=80&w=500',
+    image: '',
     isAvailable: true,
   },
   {
@@ -32,7 +32,7 @@ const fallbackFood = [
     price: 100,
     description: 'Crushed samosas topped with tangy chutneys, yogurt, and spices.',
     category: 'Snacks',
-    image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&q=80&w=500',
+    image: '',
     isAvailable: true,
   },
 ];
