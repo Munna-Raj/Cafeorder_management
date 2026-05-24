@@ -1,4 +1,5 @@
-const DEFAULT_TYPES = ['Beverage', 'Snacks', 'Food'];
+const { MENU_CATEGORIES } = require('./menuData');
+const DEFAULT_TYPES = MENU_CATEGORIES;
 
 let categories = DEFAULT_TYPES.map((name, i) => ({
   _id: `mem-cat-${i + 1}`,

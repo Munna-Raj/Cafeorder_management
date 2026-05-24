@@ -5,7 +5,7 @@ const FoodItem = require('./models/FoodItem');
 const Content = require('./models/Content');
 const Table = require('./models/Table');
 const Category = require('./models/Category');
-const { DEFAULT_TYPES } = require('./utils/categoryStore');
+const { MENU_CATEGORIES, getMenuItemsForDb } = require('./utils/menuData');
 const connectDB = require('./config/db');
 
 dotenv.config();
@@ -39,44 +39,13 @@ const seedData = async () => {
     console.log('Tables initialized');
 
     await Category.insertMany(
-      DEFAULT_TYPES.map((name, i) => ({ name, sortOrder: i + 1 }))
+      MENU_CATEGORIES.map((name, i) => ({ name, sortOrder: i + 1 }))
     );
     console.log('Menu types initialized');
 
-    // Create Sample Food Items
-    const sampleFood = [
-      {
-        name: 'Matka Masala Tea',
-        price: 50,
-        description: 'Authentic Nepali spiced tea served in a traditional clay pot.',
-        category: 'Beverage',
-        image: '',
-      },
-      {
-        name: 'Veg Paneer MoMo',
-        price: 180,
-        description: 'Steamed dumplings filled with spiced cottage cheese and minced vegetables.',
-        category: 'Snacks',
-        image: '',
-      },
-      {
-        name: 'Veg Chowmein',
-        price: 120,
-        description: 'Stir-fried noodles with fresh garden vegetables and Nepali spices.',
-        category: 'Snacks',
-        image: '',
-      },
-      {
-        name: 'Samosa Chat',
-        price: 100,
-        description: 'Crushed samosas topped with tangy chutneys, yogurt, and spices.',
-        category: 'Snacks',
-        image: '',
-      }
-    ];
-
-    await FoodItem.insertMany(sampleFood);
-    console.log('Sample veg food items created');
+    const menuFood = getMenuItemsForDb();
+    await FoodItem.insertMany(menuFood);
+    console.log(`${menuFood.length} menu items created`);
 
     // Create Sample Content
     const sampleContent = [
